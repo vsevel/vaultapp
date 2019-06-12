@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: vaultapp
+  name: vaultapp
+  namespace: vaultapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vaultapp
+  template:
+    metadata:
+      labels:
+        app: vaultapp
+    spec:
+      containers:
+      - image: quarkus/vaultapp-jvm
+        imagePullPolicy: Never
+        name: vaultapp
+        ports:
+        - containerPort: 8080
+          name: vaultport
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vaultapp
+  namespace: vaultapp
+  labels:
+    app: vaultapp
+spec:
+  type: NodePort
+  ports:
+    - name: vault
+      port: 8080
+      nodePort: 30400
+  selector:
+    app: vaultapp

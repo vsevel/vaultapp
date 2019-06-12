@@ -1,0 +1,15 @@
+{
+    "hosts": [
+      "vault.vault.svc.cluster.local",
+      "vault.vault",
+      "vault",
+      "127.0.0.1",
+      "localhost",
+      "myvault.mycompany.io"
+    ],
+    "CN": "vault.vault.svc.cluster.local",
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    }
+  }
