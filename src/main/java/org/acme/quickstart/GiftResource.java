@@ -8,19 +8,19 @@ import javax.ws.rs.core.MediaType;
 public class GiftResource {
 
     @Inject
-    SantaClausService santaClausService;
+    SantaClausService2 santaClausService;
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String create(@QueryParam("name") String name) {
-        santaClausService.createGift(name);
+    public String create(@QueryParam("name") String name, @QueryParam("ds") String ds) {
+        santaClausService.createGift(name, ds);
         return "created " + name;
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String getAll() {
-        return santaClausService.findAll().toString();
+    public String getAll(@QueryParam("ds") String ds) {
+        return santaClausService.findAll(ds).toString();
     }
 
 }
