@@ -8,7 +8,7 @@ import javax.ws.rs.core.MediaType;
 public class GiftResource {
 
     @Inject
-    SantaClausService2 santaClausService;
+    SantaClausService santaClausService;
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
