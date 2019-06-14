@@ -164,7 +164,7 @@ quarkus.datasource.username=postgres
 quarkus.datasource.vault-password.role=myapprole
 quarkus.datasource.vault-password.secret-path=foo
 quarkus.datasource.vault-password.secret-key=password
-quarkus.datasource.vault-password.url=http://vault.vault:8200
+quarkus.datasource.vault-password.url=http://vault.vault.svc:8200
 
 # drop and create the database at startup (use `update` to only update the schema)
 quarkus.hibernate-orm.database.generation=drop-and-create
