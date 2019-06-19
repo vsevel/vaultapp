@@ -61,7 +61,7 @@ public class SantaClausService {
     }
 
     private AgroalDataSource getDatasource(String dsname) {
-        return dsname == null ? defaultDataSource : dynamicDataSource;
+        return "dynamic".equals(dsname) ? dynamicDataSource : defaultDataSource;
     }
 
 

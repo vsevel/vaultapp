@@ -1,16 +1,20 @@
-# vaultapp
-vault quarkus application example
+# Application vaultapp
+vault quarkus application example that uses vault to get its credentials.
+Two datasources are configured: one with a static password, and another one using postgres dynamically generated
+credentials.
+The following explains how to deploy the complete solution, including postgresql and vault in k8s.
 
-Create namespaces
+## Create namespaces
 ```
 kubectl create namespace vault
 kubectl create namespace vaultapp
 ```
 
-Deploy Postgres
+## Deploy Postgres
 ```
 kubectl config set-context $(kubectl config current-context) --namespace=vaultapp
 kubectl apply -f src/test/k8s/postgres.yaml
+sleep 5
 postgres=$(kubectl get pod -n vaultapp -l app=postgres -o jsonpath="{.items[0].metadata.name}")
 
 # execute next commands from within shell
@@ -21,7 +25,7 @@ kubectl exec -n vaultapp -it $postgres bash
     \c mydb
     create user myuser with encrypted password 'mypass';
     \du
-    CREATE TABLE "public"."gift" (id bigint PRIMARY KEY NOT NULL,name varchar(255));
+    CREATE TABLE "public"."gift" (id SERIAL,name varchar(255));
     \dt
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO myuser;
     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public to myuser;
@@ -34,11 +38,12 @@ kubectl exec -n vaultapp -it $postgres bash
 exit
 ```
 
-Deploy Vault
+## Deploy Vault
 ```
 kubectl config set-context $(kubectl config current-context) --namespace=vault
 ./src/test/k8s/create-cert.sh
 kubectl apply -f src/test/k8s/vault.yaml
+sleep 5
 vault=$(kubectl get pod -n vault -l app=vault -o jsonpath="{.items[0].metadata.name}")
 
 # execute next commands from within shell
@@ -73,8 +78,8 @@ EOF
 
     # create vault role
     vault write auth/kubernetes/role/myapprole \
-      bound_service_account_names='*' \
-      bound_service_account_namespaces='vaultapp' \
+      bound_service_account_names=* \
+      bound_service_account_namespaces=vaultapp \
       policies=mypolicy ttl=2h max_ttl=12h
       
     # static secrets
@@ -87,23 +92,15 @@ EOF
     
     vault write database/config/mydb \
         plugin_name=postgresql-database-plugin \
-        allowed_roles="mydbrole" \
-        connection_url="postgresql://{{username}}:{{password}}@postgres.vaultapp.svc.cluster.local:5432/mydb?sslmode=disable" \
-        username="postgres" \
-        password="bar"  
-    
-    #default_ttl="1m"
-    #max_ttl="3m"
-    default_ttl="2h"
-    max_ttl="12h"
+        allowed_roles=mydbrole \
+        connection_url=postgresql://{{username}}:{{password}}@postgres.vaultapp.svc.cluster.local:5432/mydb?sslmode=disable \
+        username=postgres \
+        password=bar  
     
 cat << EOF > /tmp/readonly.sql
 CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';
--- GRANT USAGE ON SCHEMA public TO "{{name}}";
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "{{name}}";
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public to "{{name}}";
--- ALTER DEFAULT PRIVILEGES FOR ROLE "{{name}}" IN SCHEMA public
--- GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "{{name}}";
 EOF
     
     vault write database/roles/mydbrole \
@@ -111,8 +108,8 @@ EOF
         creation_statements=@/tmp/readonly.sql \
         revocation_statements="ALTER ROLE \"{{name}}\" NOLOGIN;" \
         renew_statements="ALTER ROLE \"{{name}}\" VALID UNTIL '{{expiration}}';" \
-        default_ttl="$default_ttl" \
-        max_ttl="$max_ttl"
+        default_ttl=2h \
+        max_ttl=12h
     
     vault read database/creds/mydbrole
     # => username & password
@@ -120,25 +117,35 @@ EOF
 exit
 ```
 
-Deploy Vault App
+## Deploy Vault App
 ```
+./mvnw clean install
+docker build -f src/main/docker/Dockerfile.jvm -t quarkus/vaultapp-jvm .
 kubectl config set-context $(kubectl config current-context) --namespace=vaultapp
+kubectl delete deploy vaultapp -n vaultapp --ignore-not-found=true
 kubectl apply -f src/test/k8s/vaultapp.yaml
+sleep 5
 vaultapp=$(kubectl get pod -n vaultapp -l app=vaultapp -o jsonpath="{.items[0].metadata.name}")
 kubectl logs --follow -n vaultapp $vaultapp
 ```
 
-Invoke gift endpoint
+## Test: Invoke gift endpoint
 ```
-# add gift
+# add gift with static password from vault
 curl --request POST http://localhost:30400/gift?name=toto
+
+# use dynamic cerdentials
+curl http://localhost:30400/gift?ds=dynamic
+
 # list gifts
 curl http://localhost:30400/gift
+
 # call in a loop
 while :; do curl http://localhost:30400/gift; sleep 9; done
 ```
 
-Useful: Create self signed certificate
+## Misc 
+Create self signed certificate:
 ```
 openssl req -x509 -nodes -days 730 -newkey rsa:2048 -keyout vault-selfsigned-key.pem -out vault-selfsigned.pem -config vault-selfsigned.conf -extensions 'v3_req'
 cp vault-selfsigned-key.pem tls.key
@@ -147,7 +154,7 @@ kubectl delete secret vault-selfsigned-tls -n vault
 kubectl create secret tls vault-selfsigned-tls --key ./tls.key --cert ./tls.crt -n vault
 ```
 
-Cleanup
+## Cleanup
 ```
 kubectl delete namespace vault
 kubectl delete namespace vaultapp 
