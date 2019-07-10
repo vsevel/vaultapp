@@ -15,12 +15,13 @@
 #
 ###
 FROM fabric8/java-alpine-openjdk8-jre
-ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.config.file=/tmp/logging.properties"
+RUN apk add --no-cache nss
 #ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV TZ=Europe/Zurich
 ENV AB_ENABLED=jmx_exporter
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.config.file=/tmp/logging.properties -Djavax.net.ssl.trustStore=/tmp/myTrustStore"
 COPY src/main/docker/logging.properties /tmp/logging.properties
-RUN apk add --no-cache nss
+COPY src/test/k8s/local-test/myTrustStore /tmp/myTrustStore
 COPY target/lib/* /deployments/lib/
 COPY target/*-runner.jar /deployments/app.jar
 ENTRYPOINT [ "/deployments/run-java.sh" ]

@@ -134,7 +134,7 @@ kubectl logs --follow -n vaultapp $vaultapp
 # add gift with static password from vault
 curl --request POST http://localhost:30400/gift?name=toto
 
-# use dynamic cerdentials
+# use dynamic credentials
 curl http://localhost:30400/gift?ds=dynamic
 
 # list gifts

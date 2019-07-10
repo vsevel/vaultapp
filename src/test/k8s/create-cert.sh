@@ -38,6 +38,8 @@ cp vault-key.pem tls.key
 cp vault.crt tls.crt
 kubectl create secret tls vault-tls --key ./tls.key --cert ./tls.crt -n vault
 
+keytool -import -file vault.crt -alias vault -keystore myTrustStore -noprompt -storepass changeit
+
 # Display public key content
 openssl x509 -in tls.crt -text
   #Propriétaire : CN=vault.vault.svc.cluster.local

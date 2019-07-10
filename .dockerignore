@@ -3,3 +3,5 @@
 !target/*-runner.jar
 !target/lib/*
 !src/main/docker/logging.properties
+!src/main/docker/logging.properties
+!src/test/k8s/local-test/myTrustStore
