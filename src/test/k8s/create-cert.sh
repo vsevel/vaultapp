@@ -3,6 +3,7 @@
 BASEDIR=$(dirname $0)
 echo executing from $BASEDIR
 cp $BASEDIR/vault-csr.json $BASEDIR/local-test
+mkdir $BASEDIR/local-test
 pushd $BASEDIR/local-test
 
 kubectl delete csr vault.vault --ignore-not-found=false
@@ -36,6 +37,7 @@ kubectl get csr vault.vault -o jsonpath='{.status.certificate}' | base64 --decod
 
 cp vault-key.pem tls.key
 cp vault.crt tls.crt
+kubectl delete secret vault-tls --ignore-not-found=false
 kubectl create secret tls vault-tls --key ./tls.key --cert ./tls.crt -n vault
 
 keytool -import -file vault.crt -alias vault -keystore myTrustStore -noprompt -storepass changeit

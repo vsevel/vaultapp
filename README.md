@@ -68,7 +68,7 @@ kubectl exec -n vault -it $vault sh
     
     # create vault policy  
 cat <<EOF | vault policy write mypolicy -
-path "secret/foo" {
+path "secret/vaultappconfig" {
   capabilities = ["read"]
   }
 path "database/creds/mydbrole" {
@@ -84,8 +84,8 @@ EOF
       
     # static secrets
     vault secrets enable -path=secret kv
-    vault kv put secret/foo password=mypass
-    vault kv get secret/foo
+    vault kv put secret/vaultappconfig quarkus.datasource.password=mypass
+    vault kv get secret/vaultappconfig
       
     # dynamic secrets
     vault secrets enable database
