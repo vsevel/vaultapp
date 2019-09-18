@@ -54,8 +54,8 @@
 
     <!-- VAULT -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-vault</artifactId>
     </dependency>
 
 

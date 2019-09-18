@@ -84,7 +84,7 @@ EOF
       
     # static secrets
     vault secrets enable -path=secret kv
-    vault kv put secret/vaultappconfig quarkus.datasource.password=mypass
+    vault kv put secret/vaultappconfig password=mypass
     vault kv get secret/vaultappconfig
       
     # dynamic secrets
