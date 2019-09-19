@@ -2,8 +2,9 @@
 
 BASEDIR=$(dirname $0)
 echo executing from $BASEDIR
-cp $BASEDIR/vault-csr.json $BASEDIR/local-test
+rm -rf $BASEDIR/local-test
 mkdir $BASEDIR/local-test
+cp $BASEDIR/vault-csr.json $BASEDIR/local-test
 pushd $BASEDIR/local-test
 
 kubectl delete csr vault.vault --ignore-not-found=false

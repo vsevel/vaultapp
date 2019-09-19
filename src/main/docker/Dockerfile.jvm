@@ -20,9 +20,8 @@ COPY target/lib/* /deployments/lib/
 #ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV TZ=Europe/Zurich
 ENV AB_ENABLED=jmx_exporter
-#ENV JAVA_OPTIONS="-Dquarkus.vault.url=https://vault.vault.svc:8200 -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.config.file=/tmp/logging.properties -Djavax.net.ssl.trustStore=/tmp/myTrustStore -Djavax.net.ssl.trustStorePassword=changeit"
-ENV JAVA_OPTIONS="-Dquarkus.vault.url=https://vault.vault.svc:8200 -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.config.file=/tmp/logging.properties"
+ENV JAVA_OPTIONS="-Dquarkus.vault.url=https://vault.vault.svc:8200 -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.config.file=/tmp/logging.properties -Djavax.net.ssl.trustStore=/tmp/myTrustStore -Djavax.net.ssl.trustStorePassword=changeit"
 COPY src/main/docker/logging.properties /tmp/logging.properties
-#COPY src/test/k8s/local-test/myTrustStore /tmp/myTrustStore
+COPY src/test/k8s/local-test/myTrustStore /tmp/myTrustStore
 COPY target/*-runner.jar /deployments/app.jar
 ENTRYPOINT [ "/deployments/run-java.sh" ]
