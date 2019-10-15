@@ -158,6 +158,7 @@ kubectl create secret tls vault-selfsigned-tls --key ./tls.key --cert ./tls.crt 
 ```
 kubectl delete namespace vault
 kubectl delete namespace vaultapp 
+kubectl delete csr vault.vault
 ```
 
 
