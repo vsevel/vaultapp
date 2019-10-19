@@ -154,10 +154,17 @@ kubectl delete secret vault-selfsigned-tls -n vault
 kubectl create secret tls vault-selfsigned-tls --key ./tls.key --cert ./tls.crt -n vault
 ```
 
+Display trust store content:
+```
+keytool -list -v -keystore ca-crt.jks -storepass changeit
+```
+
 ## Cleanup
 ```
 kubectl delete namespace vault
 kubectl delete namespace vaultapp 
+kubectl delete csr vault.vault --ignore-not-found=false
+rm -rf src/test/k8s/local-test
 ```
 
 

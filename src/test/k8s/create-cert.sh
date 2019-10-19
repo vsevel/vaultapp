@@ -2,6 +2,7 @@
 
 BASEDIR=$(dirname $0)
 echo executing from $BASEDIR
+mkdir $BASEDIR/local-test
 cp $BASEDIR/vault-csr.json $BASEDIR/local-test
 pushd $BASEDIR/local-test
 
@@ -38,7 +39,10 @@ cp vault-key.pem tls.key
 cp vault.crt tls.crt
 kubectl create secret tls vault-tls --key ./tls.key --cert ./tls.crt -n vault
 
-keytool -import -file vault.crt -alias vault -keystore myTrustStore -noprompt -storepass changeit
+# build a jks from k8s ca.crt
+postgres=$(kubectl get pod -n vaultapp -l app=postgres -o jsonpath="{.items[0].metadata.name}")
+kubectl exec -n vaultapp $postgres cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt > ca.crt
+keytool -import -file ca.crt -alias vault -keystore ca-crt.jks -noprompt -storepass changeit
 
 # Display public key content
 openssl x509 -in tls.crt -text
