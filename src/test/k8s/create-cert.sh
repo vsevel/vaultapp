@@ -2,6 +2,7 @@
 
 BASEDIR=$(dirname $0)
 echo executing from $BASEDIR
+rm -rf $BASEDIR/local-test
 mkdir $BASEDIR/local-test
 cp $BASEDIR/vault-csr.json $BASEDIR/local-test
 pushd $BASEDIR/local-test
@@ -37,6 +38,7 @@ kubectl get csr vault.vault -o jsonpath='{.status.certificate}' | base64 --decod
 
 cp vault-key.pem tls.key
 cp vault.crt tls.crt
+kubectl delete secret vault-tls --ignore-not-found=false
 kubectl create secret tls vault-tls --key ./tls.key --cert ./tls.crt -n vault
 
 # build a jks from k8s ca.crt
